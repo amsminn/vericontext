@@ -47,7 +47,7 @@ vericontext verify workspace --root . --in-path README.md --json
   1. 파일이 이동/이름변경되었는지 확인한다.
      - 이동됨: 새 경로로 citation 재생성.
      - 삭제됨: 문서에서 해당 참조를 제거.
-  2. structure claim (exists-file 등)도 함께 수정한다.
+  2. 해당 파일의 전체 파일 해시(vctx_cite L1~마지막 줄)도 함께 수정한다.
 ```
 
 ### 3. `range_invalid` — 라인 범위 초과

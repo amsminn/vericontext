@@ -1,12 +1,32 @@
 {
   "name": "vericontext",
-  "version": "0.1.0",
-  "description": "Verifiable Context Compactor CLI and MCP server",
+  "version": "0.1.2",
+  "description": "Deterministic, hash-based verification for docs that reference code",
   "type": "module",
   "bin": {
     "vericontext": "dist/cli.js",
     "vcc": "dist/cli.js"
   },
+  "files": [
+    "dist",
+    "skills"
+  ],
+  "keywords": [
+    "documentation",
+    "verification",
+    "citation",
+    "hash",
+    "mcp",
+    "agents",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amsminn/vericontext.git"
+  },
+  "homepage": "https://github.com/amsminn/vericontext",
+  "license": "MIT",
+  "author": "amsminn",
   "engines": {
     "node": ">=20"
   },
@@ -15,6 +35,7 @@
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
     "mcp:smoke": "tsx scripts/mcp-smoke.ts"
   },
   "dependencies": {

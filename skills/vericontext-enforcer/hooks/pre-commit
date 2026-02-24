@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# VeriContext pre-commit hook
+# 프로젝트 전체의 vctx claim이 포함된 .md 파일을 검증한다.
+# 하나라도 실패하면 커밋을 차단한다.
+#
+# 설치:
+#   cp skills/vericontext-enforcer/hooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+VCTX="${VERICONTEXT_BIN:-npx vericontext}"
+
+if ! command -v npx &>/dev/null && [ -z "${VERICONTEXT_BIN:-}" ]; then
+  echo "[vericontext] npx not found. Skipping verification."
+  exit 0
+fi
+
+DOCS=$(grep -rl '\[\[vctx' "$ROOT" --include='*.md' \
+  | grep -v node_modules \
+  | grep -v '\.git/' \
+  | sed "s|^$ROOT/||" \
+  | sort 2>/dev/null || true)
+
+if [ -z "$DOCS" ]; then
+  exit 0
+fi
+
+FAILED=0
+TOTAL=0
+
+while IFS= read -r doc; do
+  [ -z "$doc" ] && continue
+  TOTAL=$((TOTAL + 1))
+
+  RESULT=$($VCTX verify workspace --root "$ROOT" --in-path "$doc" --json 2>/dev/null \
+    || echo '{"ok":false,"error":"command_failed"}')
+  OK=$(echo "$RESULT" | grep -o '"ok":[a-z]*' | head -1 | cut -d: -f2)
+
+  if [ "$OK" = "true" ]; then
+    echo "[vericontext] PASS: $doc"
+  else
+    echo "[vericontext] FAIL: $doc"
+    echo "$RESULT" | python3 -m json.tool 2>/dev/null || echo "$RESULT"
+    FAILED=$((FAILED + 1))
+  fi
+done <<< "$DOCS"
+
+echo ""
+if [ "$FAILED" -gt 0 ]; then
+  echo "[vericontext] $FAILED/$TOTAL document(s) have stale claims."
+  echo "[vericontext] Commit blocked. Fix all claims and retry."
+  exit 1
+fi
+
+echo "[vericontext] All $TOTAL document(s) verified."
+exit 0

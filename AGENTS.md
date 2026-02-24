@@ -19,7 +19,7 @@ vericontext/
 <!-- [[vctx-exists-dir:src/]] -->
 <!-- [[vctx-exists-dir:tests/]] -->
 <!-- [[vctx-exists-dir:scripts/]] -->
-<!-- [[vctx-exists-file:scripts/mcp-smoke.ts]] -->
+<!-- [[vctx:scripts/mcp-smoke.ts#L1-L46@ca099fc6]] -->
 <!-- [[vctx-missing:tmp-output/]] -->
 
 ## WHERE TO LOOK
@@ -48,11 +48,12 @@ LSP was unavailable in this environment; use file-level map above as the active 
 
 이 프로젝트의 문서를 작성·수정할 때 반드시 따라야 할 규칙:
 
-1. **코드 참조 시 citation 필수**: 코드를 언급하면 `vericontext cite --root . --path <file> --start-line <N> --end-line <M> --json`으로 citation 토큰을 생성하고 문서에 삽입한다.
-2. **구조 참조 시 claim 필수**: 파일/디렉토리 존재를 언급하면 `vericontext claim --root . --kind <kind> --path <path> --json`으로 claim을 생성한다.
-3. **커밋 전 검증 필수**: `vericontext verify workspace --root . --in-path <doc.md> --json` 실행 → `ok: true`여야 커밋 가능.
-4. **코드 수정 시 문서 갱신 필수**: 코드를 변경하면, 해당 코드를 참조하는 문서의 citation을 재생성한다.
-5. **수동 토큰 작성 금지**: hash 값을 추측하거나 복사하지 않는다. 반드시 도구로 생성한다.
+1. **파일 언급 시 해시 필수**: 파일을 언급하면(역할, 코드, 존재 여부 무관) `vericontext cite --root . --path <file> --start-line 1 --end-line <last> --json`으로 전체 파일 해시를 생성한다. `exists-file` claim은 사용하지 않는다.
+2. **코드 라인 참조 시 citation 필수**: 특정 라인 범위를 언급하면 `vericontext cite`로 해당 범위를 cite한다.
+3. **디렉토리 언급 시 claim 필수**: 디렉토리 존재를 언급하면 `vericontext claim --root . --kind exists-dir --path <path> --json`으로 claim을 생성한다.
+4. **작업 완료 시 검증 필수**: `vericontext verify workspace --root . --in-path <doc.md> --json` 실행 → `ok: true`여야 커밋 가능. 코드 수정마다가 아니라 한 작업이 끝났을 때 검증한다.
+5. **코드 수정 시 문서 갱신 필수**: 코드를 변경하면, 작업 완료 시 해당 코드를 참조하는 문서의 citation을 재생성한다.
+6. **수동 토큰 작성 금지**: hash 값을 추측하거나 복사하지 않는다. 반드시 도구로 생성한다.
 
 상세 가이드: `.agents/skills/vericontext-enforcer/SKILL.md`
 

@@ -48,11 +48,32 @@ Over time, **your docs become liars.** And agents that trust those docs make wor
 VeriContext embeds a **SHA-256 content hash** into every code citation at write time. When you verify later, either the hash matches or it doesn't. No fuzzy recovery. No "close enough."
 
 ```
-Write time:    "handler logic" [[vctx:src/handler.ts#L30-L45@a1b2c3d4]]
+Write time:    "handler logic" [ [vctx:src/handler.ts#L30-L45@a1b2c3d4] ]
 After change:  vericontext verify → ❌ hash_mismatch (a1b2c3d4 ≠ f5e6d7c8)
 ```
 
 **One broken citation → entire doc fails.** Fail-closed by design.
+
+## What It Looks Like
+
+**What you write** (raw Markdown):
+
+```markdown
+The auth module handles login.
+<!-- [ [vctx:src/auth.ts#L1-L50@abcd1234] ] -->
+
+├── src/          <!-- [ [vctx-exists-dir:src/] ] -->
+├── tests/        <!-- [ [vctx-exists-dir:tests/] ] -->
+```
+
+**What readers see** (rendered):
+
+> The auth module handles login.
+>
+> ├── src/
+> ├── tests/
+
+That's it. Citations live inside `<!-- HTML comments -->` — **completely invisible** in GitHub, VSCode preview, or any rendered Markdown. But `vericontext verify` still finds and checks every one. If `src/auth.ts` changes, the hash breaks, the doc fails.
 
 ## Setup
 
@@ -128,33 +149,30 @@ npx vericontext verify workspace --root . --in-path README.md --json
 └──────────┘
 ```
 
-1. **Cite** — snapshot a file's line range with its SHA-256 hash
-2. **Claim** — declare structure facts: `exists-file`, `exists-dir`, `missing`
+1. **Cite** — snapshot a file's line range (or entire file) with its SHA-256 hash
+2. **Claim** — declare structure facts: `exists-dir`, `missing`
 3. **Verify** — check every citation and claim in a doc. One failure → whole doc fails
+
+> **File mentions require hashes:** Any mention of a file — its role, code, or existence — must use `vctx_cite` to hash the full file. Only directories use `exists-dir` claims.
 
 ### Claim Syntax
 
-```
-Citation:    [[vctx:<path>#L<start>-L<end>@<hash8>]]
-Exists:      [[vctx-exists:<path>]]
-Exists-file: [[vctx-exists-file:<path>]]
-Exists-dir:  [[vctx-exists-dir:<path>/]]
-Missing:     [[vctx-missing:<path>]]
-```
+Tokens use double-bracket `[[ ]]` syntax:
 
-Claims can be hidden in HTML comments so they don't clutter the doc:
+| Type | Prefix | Example |
+|------|--------|---------|
+| Citation | `vctx:` | `vctx:src/cli.ts#L1-L10@a1b2c3d4` |
+| Exists-dir | `vctx-exists-dir:` | `vctx-exists-dir:src/` |
+| Missing | `vctx-missing:` | `vctx-missing:tmp-output/` |
 
-```html
-The auth module handles login.
-<!-- [[vctx:src/auth.ts#L1-L50@abcd1234]] -->
-```
+Claims go inside `<!-- HTML comments -->` — invisible when rendered, but still verified. See [What It Looks Like](#what-it-looks-like) above.
 
 ### Features
 
 | | Feature | Description |
 |---|---|---|
 | # | **Hash citations** | Cite file line ranges with SHA-256 content hashes |
-| 📁 | **Structure claims** | Assert `exists`, `exists-file`, `exists-dir`, `missing` |
+| 📁 | **Structure claims** | Assert `exists-dir`, `missing`; files use hash citations |
 | 🔒 | **Fail-closed** | One broken claim → entire verification fails |
 | 🚧 | **Root jail** | Repo-relative paths only. `../` traversal blocked |
 | 📟 | **CLI + MCP** | Same logic as both CLI and MCP stdio server |
@@ -224,7 +242,7 @@ npx vericontext verify workspace --root <dir> (--in-path <doc> | --text <text>) 
   "ok_count": 4,
   "fail_count": 1,
   "results": [
-    { "claim": "[[vctx:src/foo.ts#L1-L3@deadbeef]]", "ok": false, "reason": "hash_mismatch" }
+    { "claim": "[ [vctx:src/foo.ts#L1-L3@deadbeef] ]", "ok": false, "reason": "hash_mismatch" }
   ]
 }
 ```
@@ -251,13 +269,20 @@ npx vericontext verify workspace --root <dir> (--in-path <doc> | --text <text>) 
 This README itself contains hidden VeriContext claims and is verifiable:
 
 <!-- [[vctx-exists-dir:src/]] -->
-<!-- [[vctx-exists-file:src/cli.ts]] -->
-<!-- [[vctx-exists-file:src/mcp/server.ts]] -->
+<!-- [[vctx:src/cli.ts#L1-L111@d491e15a]] -->
+<!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
 <!-- [[vctx-missing:tmp-output/]] -->
 
 ```bash
 npx vericontext verify workspace --root . --in-path README.md --json
 ```
+
+### Seeing Claims in Action
+
+Citations live in `<!-- HTML comments -->`, so they're invisible in rendered Markdown. To see how they actually look in practice, view the raw source:
+
+- **This README** — click "Raw" on GitHub, or `cat README.md`
+- **`src/` subdirectory docs** — [`src/README.md`](src/README.md), [`src/AGENTS.md`](src/AGENTS.md), and each submodule's README contain real working claims
 
 ## Contributing
 

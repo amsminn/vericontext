@@ -37,10 +37,11 @@
 ````markdown
 ## DOCUMENT VERIFICATION
 이 프로젝트에서 문서를 작성/수정할 때:
-1. 코드를 참조하면 `vericontext cite --root . --path <file> --start-line <N> --end-line <M> --json`으로 citation을 생성한다.
-2. 파일/디렉토리 존재를 언급하면 `vericontext claim --root . --kind <kind> --path <path> --json`으로 claim을 생성한다.
-3. 커밋 전에 `vericontext verify workspace --root . --in-path <document.md> --json`을 실행하여 모든 claim이 유효한지 확인한다.
-4. `ok: false`이면 커밋하지 않고, 실패한 claim을 수정한 뒤 재검증한다.
+1. 코드 라인을 참조하면 `vericontext cite --root . --path <file> --start-line <N> --end-line <M> --json`으로 citation을 생성한다.
+2. 파일을 언급하면(역할, 코드, 존재 여부 무관) `vericontext cite`로 전체 파일을 해시한다 (L1~마지막 줄). `exists-file` claim은 사용하지 않는다.
+3. 디렉토리 존재를 언급하면 `vericontext claim --root . --kind exists-dir --path <path> --json`으로 claim을 생성한다.
+4. 작업 완료 시 `vericontext verify workspace --root . --in-path <document.md> --json`을 실행하여 모든 claim이 유효한지 확인한다.
+5. `ok: false`이면 커밋하지 않고, 실패한 claim을 수정한 뒤 재검증한다.
 ````
 
 ## OpenCode

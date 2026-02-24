@@ -48,11 +48,32 @@ AI 코딩 에이전트가 `deep init`으로 디렉토리마다 `README.md`, `AGE
 VeriContext는 문서가 코드를 인용할 때 **SHA-256 해시를 박아넣는다.** 나중에 검증하면 해시가 맞거나 틀리거나, 둘 중 하나. 퍼지 매칭 없음. "비슷하면 OK" 없음.
 
 ```
-작성 시:  "핸들러 로직" [[vctx:src/handler.ts#L30-L45@a1b2c3d4]]
+작성 시:  "핸들러 로직" [ [vctx:src/handler.ts#L30-L45@a1b2c3d4] ]
 변경 후:  vericontext verify → ❌ hash_mismatch (a1b2c3d4 ≠ f5e6d7c8)
 ```
 
 **인용 하나라도 깨지면 전체 실패.** Fail-closed.
+
+## 어떻게 보이는지
+
+**작성하는 것** (raw Markdown):
+
+```markdown
+인증 모듈이 로그인을 처리한다.
+<!-- [ [vctx:src/auth.ts#L1-L50@abcd1234] ] -->
+
+├── src/          <!-- [ [vctx-exists-dir:src/] ] -->
+├── tests/        <!-- [ [vctx-exists-dir:tests/] ] -->
+```
+
+**독자에게 보이는 것** (렌더링):
+
+> 인증 모듈이 로그인을 처리한다.
+>
+> ├── src/
+> ├── tests/
+
+인용은 `<!-- HTML 주석 -->` 안에 들어간다 — GitHub, VSCode 미리보기, 어떤 렌더러에서든 **완전히 안 보인다.** 하지만 `vericontext verify`는 모든 인용을 찾아서 검증한다. `src/auth.ts`가 바뀌면 해시가 깨지고, 문서가 실패한다.
 
 ## 설치
 
@@ -128,33 +149,30 @@ npx vericontext verify workspace --root . --in-path README.md --json
 └──────────┘
 ```
 
-1. **Cite** — 파일의 특정 라인 범위를 SHA-256 해시와 함께 스냅샷
-2. **Claim** — 구조 사실 선언: `exists-file`, `exists-dir`, `missing`
+1. **Cite** — 파일의 라인 범위(또는 전체 파일)를 SHA-256 해시와 함께 스냅샷
+2. **Claim** — 구조 사실 선언: `exists-dir`, `missing`
 3. **Verify** — 문서의 모든 인용과 선언을 현재 코드와 대조. 하나라도 틀리면 전체 실패
+
+> **파일 언급 시 해시 필수:** 파일의 역할, 코드, 존재 여부 — 어떤 수준이든 파일을 언급하면 `vctx_cite`로 전체 파일을 해시한다. 디렉토리만 `exists-dir` claim을 사용한다.
 
 ### 인용 문법
 
-```
-인용:         [[vctx:<path>#L<start>-L<end>@<hash8>]]
-존재:         [[vctx-exists:<path>]]
-파일 존재:    [[vctx-exists-file:<path>]]
-디렉토리 존재: [[vctx-exists-dir:<path>/]]
-부재:         [[vctx-missing:<path>]]
-```
+토큰은 이중 대괄호 `[[ ]]` 문법을 사용한다:
 
-HTML 주석으로 숨길 수 있다:
+| 유형 | 접두사 | 예시 |
+|------|--------|------|
+| 인용 | `vctx:` | `vctx:src/cli.ts#L1-L10@a1b2c3d4` |
+| 디렉토리 존재 | `vctx-exists-dir:` | `vctx-exists-dir:src/` |
+| 부재 | `vctx-missing:` | `vctx-missing:tmp-output/` |
 
-```html
-인증 모듈이 로그인을 처리한다.
-<!-- [[vctx:src/auth.ts#L1-L50@abcd1234]] -->
-```
+`<!-- HTML 주석 -->` 안에 넣으면 렌더링 시 안 보이지만, 검증은 그대로 동작한다. [어떻게 보이는지](#어떻게-보이는지) 참고.
 
 ### 주요 기능
 
 | | 기능 | 설명 |
 |---|---|---|
 | # | **해시 인용** | 파일 라인 범위를 SHA-256 해시와 함께 인용 |
-| 📁 | **구조 선언** | `exists`, `exists-file`, `exists-dir`, `missing` 선언 |
+| 📁 | **구조 선언** | `exists-dir`, `missing` 선언; 파일은 해시 인용 사용 |
 | 🔒 | **Fail-closed** | 하나라도 깨지면 전체 실패. 거짓 OK 없음 |
 | 🚧 | **Root jail** | repo-relative 경로만 허용. `../` traversal 차단 |
 | 📟 | **CLI + MCP** | 동일 로직을 CLI와 MCP stdio 서버로 제공 |
@@ -224,7 +242,7 @@ npx vericontext verify workspace --root <dir> (--in-path <doc> | --text <text>) 
   "ok_count": 4,
   "fail_count": 1,
   "results": [
-    { "claim": "[[vctx:src/foo.ts#L1-L3@deadbeef]]", "ok": false, "reason": "hash_mismatch" }
+    { "claim": "[ [vctx:src/foo.ts#L1-L3@deadbeef] ]", "ok": false, "reason": "hash_mismatch" }
   ]
 }
 ```
@@ -251,13 +269,20 @@ npx vericontext verify workspace --root <dir> (--in-path <doc> | --text <text>) 
 이 README 자체가 VeriContext로 검증 가능하다:
 
 <!-- [[vctx-exists-dir:src/]] -->
-<!-- [[vctx-exists-file:src/cli.ts]] -->
-<!-- [[vctx-exists-file:src/mcp/server.ts]] -->
+<!-- [[vctx:src/cli.ts#L1-L111@d491e15a]] -->
+<!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
 <!-- [[vctx-missing:tmp-output/]] -->
 
 ```bash
 npx vericontext verify workspace --root . --in-path README-ko.md --json
 ```
+
+### 실제 사용례 보기
+
+인용은 `<!-- HTML 주석 -->` 안에 들어가므로, 렌더링된 Markdown에서는 보이지 않는다. 실제 어떻게 작성되는지 보려면 raw 소스를 확인:
+
+- **이 README** — GitHub에서 "Raw" 클릭, 또는 `cat README-ko.md`
+- **`src/` 하위 문서** — [`src/README.md`](src/README.md), [`src/AGENTS.md`](src/AGENTS.md), 각 서브모듈의 README에 실제 동작하는 claim이 포함되어 있다
 
 ## 기여
 
