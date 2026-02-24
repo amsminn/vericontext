@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+coverage/
+.DS_Store
+
+# agent/editor configs
+.agents/
+.claude/
+.serena/
+.sisyphus/

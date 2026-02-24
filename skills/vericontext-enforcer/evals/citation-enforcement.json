@@ -1,0 +1,27 @@
+[
+  {
+    "skills": ["vericontext-enforcer"],
+    "query": "README.md에 src/cli.ts의 main 함수에 대한 설명을 추가해줘",
+    "files": ["src/cli.ts", "README.md"],
+    "expected_behavior": [
+      "Agent begins Phase 1: identifies src/cli.ts as a code reference target",
+      "Agent calls vctx_cite (or vericontext cite CLI) with path=src/cli.ts and appropriate line range",
+      "Agent receives citation token with hash",
+      "Agent writes the description into README.md with the citation token embedded",
+      "Agent runs vctx_verify_workspace on README.md",
+      "Agent confirms ok: true before considering the task complete"
+    ]
+  },
+  {
+    "skills": ["vericontext-enforcer"],
+    "query": "AGENTS.md의 프로젝트 구조 섹션을 최신화해줘",
+    "files": ["AGENTS.md"],
+    "expected_behavior": [
+      "Agent begins Phase 1: identifies directory/file references in structure section",
+      "Agent calls vctx_claim for each directory and file mentioned",
+      "Agent embeds claim tokens as HTML comments in the structure section",
+      "Agent runs vctx_verify_workspace on AGENTS.md",
+      "Agent confirms ok: true before considering the task complete"
+    ]
+  }
+]

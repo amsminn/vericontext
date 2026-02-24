@@ -1,0 +1,15 @@
+[
+  {
+    "skills": ["vericontext-enforcer"],
+    "query": "src/cli.ts를 수정했어. 관련 문서도 업데이트해줘",
+    "files": ["src/cli.ts", "README.md", "AGENTS.md"],
+    "expected_behavior": [
+      "Agent identifies documents that reference src/cli.ts by scanning for vctx citations",
+      "Agent runs vctx_verify_workspace on each document to find stale claims",
+      "For each failed claim, agent regenerates citation with updated content",
+      "Agent replaces stale citation tokens in the documents",
+      "Agent re-runs verification and confirms ok: true for all documents",
+      "Agent reports which documents and citations were updated"
+    ]
+  }
+]

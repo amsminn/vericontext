@@ -1,0 +1,57 @@
+# AGENTS Raw Samples
+
+This file is a source-level sample index for AGENTS-style authoring with hidden verification claims.
+
+## Project AGENTS files to reference
+
+- Root project knowledge base: `AGENTS.md`
+<!-- [[vctx-exists-file:AGENTS.md]] -->
+- Source knowledge base: `src/AGENTS.md`
+<!-- [[vctx-exists-file:src/AGENTS.md]] -->
+- Test knowledge base: `tests/AGENTS.md`
+<!-- [[vctx-exists-file:tests/AGENTS.md]] -->
+
+## Global example list (synced with README)
+
+- `README-raw.txt`: raw sample index for README-style source authoring.
+<!-- [[vctx-exists-file:README-raw.txt]] -->
+- `AGENTS-raw.txt`: raw sample index for AGENTS-style source authoring.
+<!-- [[vctx-exists-file:AGENTS-raw.txt]] -->
+- `README.md`: human-facing style with hidden inline evidence comments.
+<!-- [[vctx-exists-file:README.md]] -->
+- `AGENTS.md`: project-level machine-verifiable knowledge-base style.
+<!-- [[vctx-exists-file:AGENTS.md]] -->
+- `src/AGENTS.md`: module-level AGENTS style with structure and location evidence.
+<!-- [[vctx-exists-file:src/AGENTS.md]] -->
+- `tests/AGENTS.md`: test-focused AGENTS style with structure evidence.
+<!-- [[vctx-exists-file:tests/AGENTS.md]] -->
+
+## Structure block pattern
+
+```text
+tests/
+├── core.test.ts        # module-level verification for cite/claim/verify
+└── e2e.test.ts         # process-level verification via built CLI
+```
+<!-- [[vctx-exists-file:tests/core.test.ts]] -->
+<!-- [[vctx-exists-file:tests/e2e.test.ts]] -->
+
+## Where-to-look pattern
+
+- Core primitive test coverage lives in `tests/core.test.ts`.
+<!-- [[vctx:tests/core.test.ts#L20-L85@922b2ee6]] -->
+
+- End-to-end CLI pass/fail flow lives in `tests/e2e.test.ts`.
+<!-- [[vctx:tests/e2e.test.ts#L59-L108@3389456a]] -->
+
+- MCP tools are registered in `src/mcp/server.ts`.
+<!-- [[vctx:src/mcp/server.ts#L21-L68@e7a273fd]] -->
+
+- Shared contracts are defined in `src/types.ts`.
+<!-- [[vctx:src/types.ts#L1-L53@ed5222ec]] -->
+
+Verify this sample:
+
+```bash
+npx . verify workspace --json --root . --in-path AGENTS-raw.txt
+```

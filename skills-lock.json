@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "add-badges": {
+      "source": "wyattowalsh/agents",
+      "sourceType": "github",
+      "computedHash": "61cb996a6a41101a651f9e70415db82afbf9deafc95abf94c47d6ed390201707"
+    },
+    "crafting-effective-readmes": {
+      "source": "softaworks/agent-toolkit",
+      "sourceType": "github",
+      "computedHash": "c931a8c22160e8925400778fcb2266b5d1df762f3052edba65f72479f79f2d6c"
+    },
+    "vericontext-enforcer": {
+      "source": "local",
+      "sourceType": "local",
+      "computedHash": "e0f6601265b534334c11514f60b898c4af1b8566e2cd899948b06695bf2d97ca"
+    }
+  }
+}
