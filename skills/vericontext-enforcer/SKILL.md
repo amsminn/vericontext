@@ -47,7 +47,7 @@ hooks:
 |-----------|-----------------|-----------|
 | 코드 라인 범위 | `vctx_cite` (라인 범위 지정) | `[[vctx:<path>#L<start>-L<end>@<hash8>]]` |
 | 파일 언급 (역할, 코드, 존재) | `vctx_cite` (전체 파일: L1~마지막 줄) | `[[vctx:<path>#L1-L<last>@<hash8>]]` |
-| 디렉토리 존재 여부 | `vctx_claim --kind exists-dir` | `[[vctx-exists-dir:<path>/]]` |
+| 디렉토리 존재 여부 | `vctx_claim --kind exists-dir` | `[​[vctx-exists-dir:<path>/]]` |
 | 파일/디렉토리 부재 확인 | `vctx_claim --kind missing` | `[[vctx-missing:<path>]]` |
 
 > **파일을 언급하면 반드시 해시한다.** 파일의 역할, 코드, 존재 여부 — 어떤 수준이든 파일을 언급하면 `vctx_cite`로 전체 파일을 해시한다. `exists-file` claim은 사용하지 않는다.
@@ -105,7 +105,7 @@ MCP 도구 `vctx_cite`, `vctx_claim`을 직접 호출한다. 파라미터는 CLI
 <!-- [[vctx-exists-dir:src/]] -->
 ├── tests/        # unit + e2e tests
 <!-- [[vctx-exists-dir:tests/]] -->
-<!-- [[vctx:package.json#L1-L<last>@<hash8>]] — 파일 언급 시 해시 필수 -->
+<!-- [​[vctx:package.json#L1-L<last>@<hash8>]] — 파일 언급 시 해시 필수 -->
 
 ### 2.4 절대 금지 사항
 

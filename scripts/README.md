@@ -11,7 +11,7 @@
 ## Usage
 
 - Run via `npm run mcp:smoke`.
-<!-- [[vctx:package.json#L13-L19@a6c8a9fe]] -->
+<!-- [[vctx:package.json#L33-L42@8a7a3c66]] -->
 - Scripts should be deterministic and CI-safe.
 
 ## Boundaries

@@ -10,17 +10,13 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-# Collect .md files that contain VCC markers, excluding node_modules, dist, .git.
-# Read into array one file per line (handles spaces in filenames via IFS).
+# Use git ls-files to respect .gitignore, then filter for VCC markers.
 files=()
 while IFS= read -r line; do
   files+=("$line")
 done < <(
-  grep -rl '\[\[vctx-' "$ROOT" \
-    --include='*.md' \
-    --exclude-dir=node_modules \
-    --exclude-dir=dist \
-    --exclude-dir=.git \
+  cd "$ROOT" && git ls-files '*.md' \
+  | xargs grep -l '\[\[vctx-' 2>/dev/null \
   | sort
 )
 

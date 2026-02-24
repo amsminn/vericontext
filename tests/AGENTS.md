@@ -30,7 +30,7 @@ tests/
 <!-- [[vctx:vitest.config.ts#L1-L8@d56db7e2]] -->
 - Use temp directories for filesystem isolation; cleanup is mandatory.
 - Validate both semantic result (`ok`, `reason`) and process-level outcome (exit code).
-<!-- [[vctx:package.json#L13-L19@a6c8a9fe]] -->
+<!-- [[vctx:package.json#L33-L42@8a7a3c66]] -->
 - Keep e2e assertions on user-visible behavior, not internal implementation details.
 <!-- [[vctx-missing:tmp-output/]] -->
 

@@ -35,8 +35,8 @@
 
 ### 예시
 ````
-<!-- [[vctx:package.json#L1-L25@a1b2c3d4]] -->
-<!-- [[vctx:src/cli.ts#L1-L103@4db34b59]] -->
+<!-- [[vctx:package.json#L1-L25@93ac3fea]] -->
+<!-- [[vctx:src/cli.ts#L1-L103@b4ee03f3]] -->
 ````
 
 ## Structure Claim (구조 선언)
@@ -44,7 +44,7 @@
 ### 형식
 | Kind | 형식 | 의미 |
 |------|------|------|
-| `exists-dir` | `[[vctx-exists-dir:<path>]]` | 디렉토리로 존재 |
+| `exists-dir` | `[​[vctx-exists-dir:<path>]]` | 디렉토리로 존재 |
 | `missing` | `[[vctx-missing:<path>]]` | 존재하지 않음 |
 
 > `exists-file` / `exists` claim은 사용하지 않는다. 파일은 반드시 `vctx_cite`로 해시한다.
