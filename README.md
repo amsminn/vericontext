@@ -9,8 +9,8 @@
 <h3 align="center">Docs lie. Hashes don't.</h3>
 
 <p align="center">
-  Deterministic, hash-based verification for docs that reference code.<br>
-  Fail-closed. Zero fuzzy matching. One stale citation → entire doc fails.
+  SHA-256 citations for docs that reference code.<br>
+  One stale citation breaks the whole document. By design.
 </p>
 
 <!-- BADGES:START -->
@@ -25,27 +25,19 @@
 <!-- BADGES:END -->
 
 <p align="center">
-  <b>English</b> ·
+  <b>English</b> &middot;
   <a href="README-ko.md">한국어</a>
-</p>
-
-<p align="center">
-  <a href="#the-problem">Why</a> ·
-  <a href="#setup">Setup</a> ·
-  <a href="#github-actions">CI</a> ·
-  <a href="#how-it-works">How It Works</a> ·
-  <a href="#cli-reference">CLI</a>
 </p>
 
 ---
 
 ## The Problem
 
-AI coding agents now scatter `README.md` and `AGENTS.md` across every directory — `deep init` style. It works great until the code changes and the docs don't. Files move, functions get rewritten, but the docs still say *"this logic lives in `src/handler.ts` at L30-L45."*
+AI agents scatter `README.md` and `AGENTS.md` across directories. It works great until the code changes and the docs don't. Files move, functions get rewritten, but the docs still say *"handler logic lives in `src/handler.ts` at L30-L45."*
 
-Over time, **your docs become liars.** And agents that trust those docs make worse decisions.
+Over time, **docs become liars.** Agents that trust stale docs make worse decisions.
 
-VeriContext embeds a **SHA-256 content hash** into every code citation at write time. When you verify later, either the hash matches or it doesn't. No fuzzy recovery. No "close enough."
+VeriContext embeds a **SHA-256 content hash** into every code citation at write time. Verify later: hash matches or it doesn't. No fuzzy matching. No "close enough."
 
 ```
 Write time:    "handler logic" [ [vctx:src/handler.ts#L30-L45@a1b2c3d4] ]
@@ -56,7 +48,9 @@ After change:  vericontext verify → ❌ hash_mismatch (a1b2c3d4 ≠ f5e6d7c8)
 
 ## What It Looks Like
 
-**What you write** (raw Markdown):
+Citations live in HTML comments — **invisible** in GitHub, VSCode, or any Markdown renderer.
+
+**Raw Markdown:**
 
 ```markdown
 The auth module handles login.
@@ -66,14 +60,14 @@ The auth module handles login.
 ├── tests/        <!-- [ [vctx-exists-dir:tests/] ] -->
 ```
 
-**What readers see** (rendered):
+**Rendered:**
 
 > The auth module handles login.
 >
 > ├── src/
 > ├── tests/
 
-That's it. Citations live inside `<!-- HTML comments -->` — **completely invisible** in GitHub, VSCode preview, or any rendered Markdown. But `vericontext verify` still finds and checks every one. If `src/auth.ts` changes, the hash breaks, the doc fails.
+`vericontext verify` finds and checks every citation. If `src/auth.ts` changes, the hash breaks, the doc fails.
 
 ## Setup
 
@@ -81,53 +75,130 @@ That's it. Citations live inside `<!-- HTML comments -->` — **completely invis
 npx skills add amsminn/vericontext --skill vericontext-enforcer
 ```
 
-Detects your agent (Claude Code, Codex, Antigravity, Cursor, Windsurf, OpenCode, …) and installs to the right path. Supports [40+ agents](https://github.com/vercel-labs/skills).
-
-To uninstall:
+Auto-detects your agent (Claude Code, Codex, Antigravity, Cursor, Windsurf, OpenCode, ...) and installs to the right path. Supports [40+ agents](https://github.com/vercel-labs/skills).
 
 ```bash
+# uninstall
 npx skills remove vericontext-enforcer
 ```
 
 Once installed, the agent automatically:
 - Inserts `[[vctx:...]]` citations when referencing code in docs
-- Runs `vctx_verify_workspace` before commits and plan finalization
+- Runs `vctx_verify_workspace` before commits
 - Flags stale citations for update
 
 <details>
 <summary>Manual install per agent</summary>
 
-The skill lives at `skills/vericontext-enforcer/SKILL.md` in this repo. Copy it to the right place for your agent:
+The skill lives at `skills/vericontext-enforcer/SKILL.md`. Copy it to the right place:
 
-| Agent | Skill path | Also needs MCP? |
-|-------|-----------|-----------------|
-| **Claude Code** | `.claude/skills/vericontext-enforcer/` | No (skill handles it) |
+| Agent | Skill path | MCP needed? |
+|-------|-----------|-------------|
+| **Claude Code** | `.claude/skills/vericontext-enforcer/` | No |
 | **Antigravity** | `~/.gemini/antigravity/skills/vericontext-enforcer/` | No |
 | **Codex** | `.codex/skills/vericontext-enforcer/` | Yes |
 | **Cursor** | `.cursor/rules/vericontext.mdc` | Yes |
 | **Windsurf** | `.windsurf/rules/vericontext.md` | Yes |
 | **OpenCode** | Project rules | Yes |
 
-For agents that need MCP, add the server to your config:
+For agents that need MCP, add to your config:
 
 ```json
 { "mcpServers": { "vericontext": { "command": "npx", "args": ["-y", "vericontext", "mcp"] } } }
 ```
 
-MCP tools exposed: `vctx_cite`, `vctx_claim`, `vctx_verify_workspace`
+MCP tools: `vctx_cite`, `vctx_claim`, `vctx_verify_workspace`
 
 </details>
 
-## GitHub Actions
+## How It Works
 
-Add a step to any workflow:
+Three operations, one principle: **hash it or it doesn't count.**
+
+```
+  cite           claim           verify
+┌────────┐    ┌────────────┐    ┌───────────────────────┐
+│  file  │──→ │ [[vctx:..  │    │ for each token:       │
+│ +lines │    │  @hash8]]  │    │   recompute hash      │
+└────────┘    └────────────┘    │   match? → ok : fail  │
+                                │ any fail → doc fails  │
+                                └───────────────────────┘
+```
+
+1. **Cite** — snapshot a file range with its SHA-256 hash (first 8 hex chars)
+2. **Claim** — declare structure facts: `exists-dir`, `missing`
+3. **Verify** — check every citation and claim. One failure → whole doc fails
+
+### Token Syntax
+
+| Type | Token | Example |
+|------|-------|---------|
+| Code citation | `[ [vctx:path#Lstart-Lend@hash8] ]` | `[ [vctx:src/cli.ts#L1-L10@a1b2c3d4] ]` |
+| Directory exists | `[ [vctx-exists-dir:path/] ]` | `[ [vctx-exists-dir:src/] ]` |
+| Path missing | `[ [vctx-missing:path] ]` | `[ [vctx-missing:tmp-output/] ]` |
+
+> **Files always get hashed.** Any mention of a file — its role, code, or existence — uses `vctx_cite` to hash the full file. Only directories use `exists-dir` claims.
+
+## CLI Reference
+
+```bash
+npm install -g vericontext    # or use npx
+```
+
+### `cite` — generate a code citation
+
+```bash
+npx vericontext cite --root <dir> --path <file> --start-line <n> --end-line <n> [--json]
+```
+
+### `claim` — generate a structure claim
+
+```bash
+npx vericontext claim --root <dir> --kind <kind> --path <path> [--json]
+```
+
+`--kind`: `exists` | `exists-file` | `exists-dir` | `missing`
+
+### `verify workspace` — verify all claims in a document
+
+```bash
+npx vericontext verify workspace --root <dir> (--in-path <doc> | --text <text>) [--json]
+```
+
+| Exit code | Meaning |
+|-----------|---------|
+| `0` | All valid |
+| `1` | One or more failures |
+
+<details>
+<summary>Error reasons</summary>
+
+| Reason | Meaning |
+|--------|---------|
+| `hash_mismatch` | Content changed since citation |
+| `file_missing` | File does not exist |
+| `path_escape` | Path escapes root jail |
+| `range_invalid` | Line range out of bounds |
+| `binary_file` | Binary file detected |
+| `symlink_skipped` | Symlink skipped for determinism |
+| `invalid_input` | Malformed input |
+
+</details>
+
+### `mcp` — run as MCP server
+
+```bash
+npx vericontext mcp
+```
+
+Exposes `vctx_cite`, `vctx_claim`, `vctx_verify_workspace` over stdio.
+
+## GitHub Actions
 
 ```yaml
 - name: Verify docs
   run: npx -y vericontext verify workspace --root . --in-path README.md --json
 ```
-
-Stale citation → CI red.
 
 ### Pre-commit Hook
 
@@ -136,153 +207,20 @@ Stale citation → CI red.
 npx vericontext verify workspace --root . --in-path README.md --json
 ```
 
-## How It Works
-
-```
-┌──────────┐    cite     ┌────────────────────────────────────┐
-│   file   │ ─────────→  │ [[vctx:path#L1-L2@<sha256-8>]]     │
-└──────────┘             └────────────────────────────────────┘
-                                       │
-┌──────────┐   verify    ┌─────────────▼──────────────────────┐
-│   file   │ ─────────→  │  hash match? → ok : hash_mismatch  │
-│(changed?)│             └────────────────────────────────────┘
-└──────────┘
-```
-
-1. **Cite** — snapshot a file's line range (or entire file) with its SHA-256 hash
-2. **Claim** — declare structure facts: `exists-dir`, `missing`
-3. **Verify** — check every citation and claim in a doc. One failure → whole doc fails
-
-> **File mentions require hashes:** Any mention of a file — its role, code, or existence — must use `vctx_cite` to hash the full file. Only directories use `exists-dir` claims.
-
-### Claim Syntax
-
-Tokens use double-bracket `[[ ]]` syntax:
-
-| Type | Prefix | Example |
-|------|--------|---------|
-| Citation | `vctx:` | `vctx:src/cli.ts#L1-L10@a1b2c3d4` |
-| Exists-dir | `vctx-exists-dir:` | `vctx-exists-dir:src/` |
-| Missing | `vctx-missing:` | `vctx-missing:tmp-output/` |
-
-Claims go inside `<!-- HTML comments -->` — invisible when rendered, but still verified. See [What It Looks Like](#what-it-looks-like) above.
-
-### Features
-
-| | Feature | Description |
-|---|---|---|
-| # | **Hash citations** | Cite file line ranges with SHA-256 content hashes |
-| 📁 | **Structure claims** | Assert `exists-dir`, `missing`; files use hash citations |
-| 🔒 | **Fail-closed** | One broken claim → entire verification fails |
-| 🚧 | **Root jail** | Repo-relative paths only. `../` traversal blocked |
-| 📟 | **CLI + MCP** | Same logic as both CLI and MCP stdio server |
-| 🔤 | **Deterministic** | UTF-8 only, LF-normalized, symlinks and binaries skipped |
-
-## CLI Reference
-
-<details>
-<summary><b>Install</b></summary>
-
-```bash
-npm install -g vericontext
-```
-
-Or use directly via `npx`:
-
-```bash
-npx vericontext --help
-```
-
-</details>
-
-<details>
-<summary><code>cite</code> — generate a code citation</summary>
-
-```bash
-npx vericontext cite --root <dir> --path <file> --start-line <n> --end-line <n> [--json]
-```
-
-| Option | Required | Description |
-|--------|----------|-------------|
-| `--root` | Yes | Repository root directory |
-| `--path` | Yes | File path relative to root |
-| `--start-line` | Yes | Start line (1-based) |
-| `--end-line` | Yes | End line (1-based) |
-| `--json` | No | JSON output |
-
-</details>
-
-<details>
-<summary><code>claim</code> — generate a structure claim</summary>
-
-```bash
-npx vericontext claim --root <dir> --kind <kind> --path <path> [--json]
-```
-
-`--kind`: `exists` | `exists-file` | `exists-dir` | `missing`
-
-</details>
-
-<details>
-<summary><code>verify workspace</code> — verify all claims in a document</summary>
-
-```bash
-npx vericontext verify workspace --root <dir> (--in-path <doc> | --text <text>) [--json]
-```
-
-| Exit Code | Meaning |
-|-----------|---------|
-| `0` | All citations and claims valid |
-| `1` | One or more failures, or input error |
-
-```json
-{
-  "ok": false,
-  "total": 5,
-  "ok_count": 4,
-  "fail_count": 1,
-  "results": [
-    { "claim": "[ [vctx:src/foo.ts#L1-L3@deadbeef] ]", "ok": false, "reason": "hash_mismatch" }
-  ]
-}
-```
-
-</details>
-
-<details>
-<summary><b>Error reasons</b></summary>
-
-| Reason | Meaning |
-|--------|---------|
-| `hash_mismatch` | Cited content has changed |
-| `file_missing` | File does not exist |
-| `path_escape` | Path escapes root jail |
-| `range_invalid` | Line range out of bounds |
-| `binary_file` | Binary file (null byte detected) |
-| `symlink_skipped` | Symlink (skipped for determinism) |
-| `invalid_input` | Malformed input |
-
-</details>
-
 ## Self-Verifying Docs
 
-This README itself contains hidden VeriContext claims and is verifiable:
-
-<!-- [[vctx-exists-dir:src/]] -->
-<!-- [[vctx:src/cli.ts#L1-L111@d491e15a]] -->
-<!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
-<!-- [[vctx-missing:tmp-output/]] -->
+This README contains hidden VeriContext claims. Verify it:
 
 ```bash
 npx vericontext verify workspace --root . --in-path README.md --json
 ```
 
-### Seeing Claims in Action
+To see how claims look in raw source, view this file with `cat README.md` or click "Raw" on GitHub.
 
-Citations live in `<!-- HTML comments -->`, so they're invisible in rendered Markdown. To see how they actually look in practice, view the raw source:
-
-- **This README** — click "Raw" on GitHub, or `cat README.md`
-- **`src/` subdirectory docs** — [`src/README.md`](src/README.md), [`src/AGENTS.md`](src/AGENTS.md), and each submodule's README contain real working claims
+<!-- [[vctx-exists-dir:src/]] -->
+<!-- [[vctx:src/cli.ts#L1-L111@d491e15a]] -->
+<!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
+<!-- [[vctx-missing:tmp-output]] -->
 
 ## Contributing
 
