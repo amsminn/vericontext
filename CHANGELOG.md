@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+---
+
+## [Released]
+
+## [0.1.3] - 2026-03-01
+
 ### Skill (`vericontext-enforcer`)
 
 - Add PreToolUse hook on `Task` tool — detects doc-related subagent tasks and outputs citation rules for the master agent to include in subagent prompts

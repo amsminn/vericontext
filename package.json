@@ -1,6 +1,6 @@
 {
   "name": "vericontext",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Deterministic, hash-based verification for docs that reference code",
   "type": "module",
   "bin": {

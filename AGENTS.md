@@ -77,7 +77,7 @@ vericontext/
 - **CLI and MCP share the same core** — adapters (`cli.ts`, `server.ts`) are thin wrappers
 - **Deterministic hashing** — UTF-8 only, LF-normalized, symlinks and binaries skipped
 - **No stdout pollution in MCP mode** — only JSON-RPC on stdout; logs go to stderr
-<!-- [[vctx:package.json#L1-L55@d1931b22]] -->
+<!-- [[vctx:package.json#L1-L55@2074b97d]] -->
 <!-- [[vctx:tsconfig.json#L1-L15@2ad7d213]] -->
 
 ## Document Verification Rules
