@@ -35,6 +35,24 @@ hooks:
               echo "  3. 디렉토리 존재 언급 → vctx_claim --kind exists-dir"
               echo "  4. citation 토큰 수동 작성 금지 — 반드시 도구로 생성"
             fi
+    - matcher: Task
+      hooks:
+        - command: |
+            INPUT=$(cat 2>/dev/null || true)
+            PROMPT=$(echo "$INPUT" | grep -oE '"prompt" *: *"[^"]*"' | head -1)
+            if echo "$PROMPT" | grep -qiE '\.md\b|readme|agents\.md|documentation|markdown|문서'; then
+              echo "[vericontext-enforcer] Doc-related subagent task detected."
+              echo "  → MUST include these citation rules in the subagent prompt:"
+              echo "  ────────────────────────────────────────────"
+              echo "  VeriContext Citation Rules (include in prompt):"
+              echo "  1. File mention → run: npx vericontext cite --root . --path <file> --start-line 1 --end-line <last> --json"
+              echo "  2. Line range ref → run: npx vericontext cite --root . --path <file> --start-line <N> --end-line <M> --json"
+              echo "  3. Directory mention → run: npx vericontext claim --root . --kind exists-dir --path <dir>/ --json"
+              echo "  4. Embed tokens in <!-- HTML comments -->. NEVER type tokens manually."
+              echo "  5. After writing, verify: npx vericontext verify workspace --root . --in-path <doc.md> --json"
+              echo "  6. Fix until ok: true. NEVER run git push."
+              echo "  ────────────────────────────────────────────"
+            fi
 ---
 
 ## Phase 1 — 참조 대상 식별 (Detect & Plan)
