@@ -2,13 +2,18 @@
 
 ## [Unreleased]
 
-- Rewrite README.md and AGENTS.md
+### Skill (`vericontext-enforcer`)
+
+- Add PreToolUse hook on `Task` tool — detects doc-related subagent tasks and outputs citation rules for the master agent to include in subagent prompts
+
+### Docs
+
+- Rewrite README.md, README-ko.md, AGENTS.md
 
 ## [0.1.2] - 2026-02-23
 
 ### Skill (`vericontext-enforcer`)
 
-- Add PreToolUse hook on `Task` tool for subagent citation propagation
 - Add pre-commit / pre-push git hooks for automated doc verification
 - Add `scripts/verify-modified-docs.sh` for batch verification
 - Add evals: `citation-enforcement.json`, `verification-workflow.json`
