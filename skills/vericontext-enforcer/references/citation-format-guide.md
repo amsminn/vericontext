@@ -35,7 +35,7 @@
 
 ### 예시
 ````
-<!-- [[vctx:package.json#L1-L25@da81971c]] -->
+<!-- [[vctx:package.json#L1-L25@965f2c44]] -->
 <!-- [[vctx:src/cli.ts#L1-L113@4df585c3]] -->
 ````
 
