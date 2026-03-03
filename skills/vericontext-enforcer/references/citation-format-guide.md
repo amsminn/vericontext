@@ -14,8 +14,8 @@
 
 ### 예시
 ````
-[[vctx:src/cli.ts#L36-L103@4db34b59]]
-[[vctx:src/verify/workspace.ts#L46-L109@39dad95f]]
+[[vctx:src/cli.ts#L38-L106@81049704]]
+[[vctx:src/verify/workspace.ts#L37-L82@bf6e3670]]
 ````
 
 ### 검증 동작
@@ -36,7 +36,7 @@
 ### 예시
 ````
 <!-- [[vctx:package.json#L1-L25@da81971c]] -->
-<!-- [[vctx:src/cli.ts#L1-L103@b4ee03f3]] -->
+<!-- [[vctx:src/cli.ts#L1-L113@4df585c3]] -->
 ````
 
 ## Structure Claim (구조 선언)

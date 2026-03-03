@@ -19,7 +19,7 @@ vericontext/
 │   │   └── workspace.ts    # Document verification: parse tokens → recompute → compare
 │   └── mcp/
 │       └── server.ts       # MCP stdio server: vctx_cite, vctx_claim, vctx_verify_workspace
-├── tests/                  # Unit + e2e tests (real dist CLI execution)
+├── tests/                  # Unit + e2e tests (69 tests across 7 files)
 ├── scripts/
 │   ├── mcp-smoke.ts        # MCP protocol smoke test
 │   └── verify-docs.sh      # Batch verification for all .md files
@@ -37,14 +37,14 @@ vericontext/
 
 | Module | File | Purpose |
 |--------|------|---------|
-| CLI entry | `src/cli.ts` | Commander-based CLI: `cite`, `claim`, `verify workspace`, `mcp` | <!-- [[vctx:src/cli.ts#L1-L111@d491e15a]] -->
+| CLI entry | `src/cli.ts` | Commander-based CLI: `cite`, `claim`, `verify workspace`, `mcp` | <!-- [[vctx:src/cli.ts#L1-L113@4df585c3]] -->
 | Type contracts | `src/types.ts` | `ErrorReason` enum, `VerifyWorkspaceResult`, `CiteSuccess`, `ClaimSuccess` | <!-- [[vctx:src/types.ts#L1-L53@ed5222ec]] -->
-| File I/O + hash | `src/core/file.ts` | `readCanonicalText` (UTF-8, LF-normalized), `hashSha256Hex`, `hashLineSpan` | <!-- [[vctx:src/core/file.ts#L1-L83@45893a37]] -->
-| Path jail | `src/core/pathing.ts` | `resolveUnderRoot` — rejects absolute paths, `../` traversal, normalizes separators | <!-- [[vctx:src/core/pathing.ts#L1-L54@74c23163]] -->
-| Citation | `src/cite/citation.ts` | `generateCitation`, `parseCitations`, `CITATION_REGEX` | <!-- [[vctx:src/cite/citation.ts#L1-L64@2bd83842]] -->
+| File I/O + hash | `src/core/file.ts` | `readCanonicalText` (UTF-8, LF-normalized), `normalizeEol`, `hashSha256Hex`, `hashLineSpan` | <!-- [[vctx:src/core/file.ts#L1-L88@b703d4c1]] -->
+| Path jail | `src/core/pathing.ts` | `resolveUnderRoot`, `normalizePathForClaim` — rejects absolute paths, `../` traversal, normalizes separators | <!-- [[vctx:src/core/pathing.ts#L1-L44@67843fbe]] -->
+| Citation | `src/cite/citation.ts` | `generateCitation`, `verifyCitation`, `parseCitations`, `CITATION_REGEX` | <!-- [[vctx:src/cite/citation.ts#L1-L91@2f499224]] -->
 | Structure claims | `src/cite/claim.ts` | `generateStructureClaim`, `parseStructureClaims`, `verifyStructureKind` | <!-- [[vctx:src/cite/claim.ts#L1-L86@767ec677]] -->
-| Workspace verify | `src/verify/workspace.ts` | `verifyWorkspace` — parse all tokens, recompute hashes, aggregate results | <!-- [[vctx:src/verify/workspace.ts#L1-L109@14af277c]] -->
-| MCP server | `src/mcp/server.ts` | `runMcpServer` — stdio transport, 3 tools registered | <!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
+| Workspace verify | `src/verify/workspace.ts` | `verifyWorkspace`, `readVerifyText` — parse all tokens, delegate to `verifyCitation`/`verifyStructureKind`, aggregate results | <!-- [[vctx:src/verify/workspace.ts#L1-L82@147e0596]] -->
+| MCP server | `src/mcp/server.ts` | `runMcpServer` — stdio transport, 3 tools registered | <!-- [[vctx:src/mcp/server.ts#L1-L74@649772e7]] -->
 | MCP smoke test | `scripts/mcp-smoke.ts` | Validates MCP stdio protocol hygiene | <!-- [[vctx:scripts/mcp-smoke.ts#L1-L46@ca099fc6]] -->
 | Batch verify | `scripts/verify-docs.sh` | Finds all .md files with vctx tokens and verifies them | <!-- [[vctx:scripts/verify-docs.sh#L1-L53@ac1ecc5e]] -->
 
@@ -112,4 +112,4 @@ npm run mcp:smoke     # MCP protocol smoke test
 ```
 <!-- [[vctx-exists-dir:dist/]] -->
 <!-- [[vctx:vitest.config.ts#L1-L8@d56db7e2]] -->
-<!-- [[vctx:tsup.config.ts#L1-L12@b0ef8813]] -->
+<!-- [[vctx:tsup.config.ts#L1-L16@955f486b]] -->

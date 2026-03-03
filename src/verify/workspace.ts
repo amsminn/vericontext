@@ -1,8 +1,6 @@
-import fs from "node:fs/promises";
-
-import { parseCitations } from "../cite/citation.js";
+import { parseCitations, verifyCitation } from "../cite/citation.js";
 import { parseStructureClaims, verifyStructureKind } from "../cite/claim.js";
-import { readCanonicalText, hashLineSpan } from "../core/file.js";
+import { normalizeEol, readCanonicalText } from "../core/file.js";
 import { resolveUnderRoot } from "../core/pathing.js";
 import type { VerifyWorkspaceResult } from "../types.js";
 import type { ErrorReason } from "../types.js";
@@ -14,33 +12,26 @@ export interface VerifyInput {
 }
 
 export async function readVerifyText(input: VerifyInput): Promise<string | { reason: ErrorReason }> {
-  const hasInPath = typeof input.inPath === "string";
-  const hasText = typeof input.text === "string";
-  if (hasInPath === hasText) {
+  if (input.text !== undefined && input.inPath !== undefined) {
+    return { reason: "invalid_input" };
+  }
+  if (input.text !== undefined) {
+    return normalizeEol(input.text);
+  }
+  if (input.inPath === undefined) {
     return { reason: "invalid_input" };
   }
 
-  if (hasText) {
-    return input.text as string;
-  }
-
-  const resolved = resolveUnderRoot(input.root, input.inPath as string);
+  const resolved = resolveUnderRoot(input.root, input.inPath);
   if (!resolved.ok) {
     return { reason: resolved.reason };
   }
 
-  let stats;
-  try {
-    stats = await fs.lstat(resolved.absolutePath);
-  } catch {
-    return { reason: "file_missing" };
+  const file = await readCanonicalText(resolved.absolutePath);
+  if (!file.ok) {
+    return { reason: file.reason };
   }
-  if (!stats.isFile()) {
-    return { reason: "not_a_file" };
-  }
-
-  const raw = await fs.readFile(resolved.absolutePath, "utf8");
-  return raw.replace(/\r\n?/g, "\n");
+  return file.text;
 }
 
 export async function verifyWorkspace(input: VerifyInput): Promise<VerifyWorkspaceResult | { ok: false; reason: ErrorReason }> {
@@ -54,31 +45,13 @@ export async function verifyWorkspace(input: VerifyInput): Promise<VerifyWorkspa
   const results: VerifyWorkspaceResult["results"] = [];
 
   for (const token of citationTokens) {
-    const resolved = resolveUnderRoot(input.root, token.path);
-    if (!resolved.ok) {
-      results.push({ claim: token.raw, kind: "citation", ok: false, reason: resolved.reason });
-      continue;
-    }
-
-    const file = await readCanonicalText(resolved.absolutePath);
-    if (!file.ok) {
-      results.push({ claim: token.raw, kind: "citation", ok: false, reason: file.reason });
-      continue;
-    }
-
-    const span = hashLineSpan(file.lines, token.startLine, token.endLine);
-    if (!span.ok) {
-      results.push({ claim: token.raw, kind: "citation", ok: false, reason: span.reason });
-      continue;
-    }
-
-    const hash8 = span.sha256_full.slice(0, 8);
-    if (hash8 !== token.hash8) {
-      results.push({ claim: token.raw, kind: "citation", ok: false, reason: "hash_mismatch" });
-      continue;
-    }
-
-    results.push({ claim: token.raw, kind: "citation", ok: true });
+    const result = await verifyCitation(input.root, token);
+    results.push({
+      claim: token.raw,
+      kind: "citation",
+      ok: result.ok,
+      reason: result.ok ? undefined : result.reason,
+    });
   }
 
   for (const token of structureTokens) {

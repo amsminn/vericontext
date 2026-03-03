@@ -12,13 +12,13 @@ and returns an aggregate pass/fail summary.
 ### workspace.ts
 
 <!-- [[vctx-exists-file:src/verify/workspace.ts]] -->
-<!-- [[vctx:src/verify/workspace.ts#L1-L109@14af277c]] -->
+<!-- [[vctx:src/verify/workspace.ts#L1-L82@147e0596]] -->
 
 The sole source file in this module. It exports two public functions:
 
 #### `readVerifyText(input: VerifyInput)`
 
-<!-- [[vctx:src/verify/workspace.ts#L16-L44@3eac890a]] -->
+<!-- [[vctx:src/verify/workspace.ts#L14-L35@af980e6f]] -->
 
 Resolves the document text that will be scanned for claims. The caller must provide
 exactly one of `inPath` (a file path relative to the repository root) or `text`
@@ -30,7 +30,7 @@ and non-files), reads it as UTF-8, and normalises line endings to `\n`.
 
 #### `verifyWorkspace(input: VerifyInput)`
 
-<!-- [[vctx:src/verify/workspace.ts#L46-L109@39dad95f]] -->
+<!-- [[vctx:src/verify/workspace.ts#L37-L82@bf6e3670]] -->
 
 The main entry point for batch verification. It operates in three phases:
 
@@ -39,24 +39,20 @@ The main entry point for batch verification. It operates in three phases:
 2. **Citation verification** -- extracts all `[[vctx:...]]` tokens via
    `parseCitations` from `src/cite/`
    <!-- [[vctx-exists-dir:src/cite/]] -->
-   and, for each token:
-   - Resolves the cited path under the root.
-   - Reads the target file as canonical text.
-   - Hashes the specified line span via `hashLineSpan` from `src/core/`.
-     <!-- [[vctx-exists-dir:src/core/]] -->
-   - Compares the first 8 hex characters of the SHA-256 against the token's
-     embedded `hash8`. A mismatch produces `hash_mismatch`.
-   <!-- [[vctx:src/verify/workspace.ts#L56-L82@e64af58b]] -->
+   and delegates each to `verifyCitation` from `src/cite/citation.ts`, which
+   resolves the path, reads the file, hashes the line span, and compares the
+   first 8 hex characters against the token's `hash8`.
+   <!-- [[vctx:src/verify/workspace.ts#L47-L55@b79618ad]] -->
 
 3. **Structure-claim verification** -- extracts all `[[vctx-<kind>:...]]` tokens
    via `parseStructureClaims` and delegates each to `verifyStructureKind`, which
    checks the filesystem for existence, file-ness, or directory-ness as appropriate.
-   <!-- [[vctx:src/verify/workspace.ts#L84-L96@00c9efaf]] -->
+   <!-- [[vctx:src/verify/workspace.ts#L57-L69@00c9efaf]] -->
 
 After processing every token the function aggregates results into a
 `VerifyWorkspaceResult`:
 
-<!-- [[vctx:src/verify/workspace.ts#L98-L108@fb6b18d2]] -->
+<!-- [[vctx:src/verify/workspace.ts#L71-L81@fb6b18d2]] -->
 
 | Field        | Meaning                                        |
 | ------------ | ---------------------------------------------- |
@@ -68,7 +64,7 @@ After processing every token the function aggregates results into a
 
 #### `VerifyInput` interface
 
-<!-- [[vctx:src/verify/workspace.ts#L10-L14@9a910450]] -->
+<!-- [[vctx:src/verify/workspace.ts#L8-L12@9a910450]] -->
 
 ```ts
 interface VerifyInput {

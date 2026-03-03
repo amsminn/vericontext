@@ -62,3 +62,30 @@ export async function generateCitation(input: {
     sha256_full: span.sha256_full,
   };
 }
+
+export async function verifyCitation(
+  root: string,
+  token: CitationParts,
+): Promise<{ ok: true } | { ok: false; reason: ErrorReason }> {
+  const resolved = resolveUnderRoot(root, token.path);
+  if (!resolved.ok) {
+    return { ok: false, reason: resolved.reason };
+  }
+
+  const file = await readCanonicalText(resolved.absolutePath);
+  if (!file.ok) {
+    return { ok: false, reason: file.reason };
+  }
+
+  const span = hashLineSpan(file.lines, token.startLine, token.endLine);
+  if (!span.ok) {
+    return { ok: false, reason: span.reason };
+  }
+
+  const hash8 = span.sha256_full.slice(0, 8);
+  if (hash8 !== token.hash8) {
+    return { ok: false, reason: "hash_mismatch" };
+  }
+
+  return { ok: true };
+}

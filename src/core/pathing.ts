@@ -13,14 +13,8 @@ export interface PathErr {
   reason: ErrorReason;
 }
 
-export const DEFAULT_EXCLUDES = [".git", "node_modules", "dist", "build"] as const;
-
 export function normalizePathForClaim(inputPath: string): string {
-  const normalized = inputPath.replaceAll("\\", "/").replace(/^\.\//, "");
-  if (normalized.length > 0 && normalized.endsWith("/")) {
-    return normalized;
-  }
-  return normalized;
+  return inputPath.replaceAll("\\", "/").replace(/^\.\//, "");
 }
 
 export function resolveUnderRoot(root: string, inputPath: string): PathOk | PathErr {
@@ -47,8 +41,4 @@ export function resolveUnderRoot(root: string, inputPath: string): PathOk | Path
   }
 
   return { ok: true, normalizedPath, absolutePath };
-}
-
-export function isExcludedPath(normalizedPath: string): boolean {
-  return DEFAULT_EXCLUDES.some((prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`));
 }

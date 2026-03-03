@@ -89,7 +89,7 @@ vericontext cite --root <project-root> --path <file> --start-line <N> --end-line
 
 응답 예시:
 ```json
-{ "ok": true, "citation": "[[vctx:src/cli.ts#L28-L34@2b4ed3f8]]", "sha256_full": "2b4ed3f8..." }
+{ "ok": true, "citation": "[[vctx:src/cli.ts#L30-L36@1625cd2a]]", "sha256_full": "1625cd2a..." }
 ```
 
 **Structure Claim 생성:**
@@ -110,12 +110,12 @@ MCP 도구 `vctx_cite`, `vctx_claim`을 직접 호출한다. 파라미터는 CLI
 
 **패턴 A — 인라인 (테이블, 코드맵에서 사용):**
 
-| CLI 진입점 | `src/cli.ts` | <!-- [[vctx:src/cli.ts#L28-L34@2b4ed3f8]] --> |
+| CLI 진입점 | `src/cli.ts` | <!-- [[vctx:src/cli.ts#L30-L36@1625cd2a]] --> |
 
 **패턴 B — 섹션 끝 (설명 문단 뒤에 사용):**
 
 검증 로직은 claim 단위로 원자적으로 동작한다. 하나라도 실패하면 전체 결과가 `ok: false`가 된다.
-<!-- [[vctx:src/verify/workspace.ts#L46-L109@39dad95f]] -->
+<!-- [[vctx:src/verify/workspace.ts#L37-L82@bf6e3670]] -->
 
 **패턴 C — 구조 선언 (프로젝트 구조 설명에 사용):**
 

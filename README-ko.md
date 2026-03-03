@@ -218,8 +218,8 @@ npx vericontext verify workspace --root . --in-path README-ko.md --json
 raw 소스에서 claim을 보려면 `cat README-ko.md` 또는 GitHub에서 "Raw" 클릭.
 
 <!-- [[vctx-exists-dir:src/]] -->
-<!-- [[vctx:src/cli.ts#L1-L111@d491e15a]] -->
-<!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
+<!-- [[vctx:src/cli.ts#L1-L113@4df585c3]] -->
+<!-- [[vctx:src/mcp/server.ts#L1-L74@649772e7]] -->
 <!-- [[vctx-missing:tmp-output]] -->
 
 ## 기여

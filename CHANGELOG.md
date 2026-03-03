@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+### Bug Fixes
+
+- **Version unification** — CLI and MCP server now read version from `package.json` at build time via tsup `define`, eliminating hardcoded version drift
+- **readFile TOCTOU guard** — `readCanonicalText` now wraps `fs.readFile` in try/catch, returning `file_missing` if the file disappears between `lstat` and `readFile`
+- **readVerifyText consistency** — `readVerifyText` now delegates to `readCanonicalText`, gaining strict UTF-8, symlink protection, and binary detection; removed `as string` type assertions
+
+### Tests
+
+- Add `tests/core-pathing.test.ts` — 12 tests for `normalizePathForClaim` and `resolveUnderRoot`
+- Add `tests/core-file.test.ts` — 17 tests for `normalizeEol`, `hashLineSpan`, and `readCanonicalText`
+- Add `tests/cite-citation.test.ts` — 10 tests for `renderCitation` and `parseCitations`
+- Add `tests/cite-claim.test.ts` — 21 tests for `renderStructureClaim`, `parseStructureClaims`, `generateStructureClaim`, `verifyStructureKind`
+- Add `tests/verify-workspace.test.ts` — 4 tests for `readVerifyText`
+- Total test count: 5 → 69
+
+### Refactoring
+
+- **normalizePathForClaim** — removed no-op if/else branch (both returned same value)
+- **Dead code removal** — removed unused `DEFAULT_EXCLUDES` and `isExcludedPath` from `pathing.ts`
+- **verifyCitation extraction** — extracted 25-line citation verification loop from `workspace.ts` into `verifyCitation()` in `citation.ts`; workspace citation loop reduced to 5 lines
+
 ---
 
 ## [Released]

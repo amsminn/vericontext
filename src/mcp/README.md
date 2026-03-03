@@ -16,13 +16,13 @@ and `src/verify/`.
 ### server.ts
 
 <!-- [[vctx-exists-file:src/mcp/server.ts]] -->
-<!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
+<!-- [[vctx:src/mcp/server.ts#L1-L74@649772e7]] -->
 
 Single source file containing the full MCP server setup.
 
 #### `textJson(value)`
 
-<!-- [[vctx:src/mcp/server.ts#L9-L13@7642c05e]] -->
+<!-- [[vctx:src/mcp/server.ts#L11-L15@7642c05e]] -->
 
 Private helper that wraps an arbitrary value into the MCP content envelope
 `{ content: [{ type: "text", text: "<json>" }] }`. Every tool handler returns
@@ -31,24 +31,24 @@ JSON-over-text responses.
 
 #### `runMcpServer()`
 
-<!-- [[vctx:src/mcp/server.ts#L15-L72@f04e2724]] -->
+<!-- [[vctx:src/mcp/server.ts#L17-L74@9d9bf659]] -->
 
 Exported async function called by the CLI `mcp` subcommand. It performs three
 steps:
 
 1. **Server initialisation** -- creates an `McpServer` instance with name
-   `"vericontext"` and version `"0.1.0"`.
+   `"vericontext"` and version from `package.json` (injected at build time).
 
 2. **Tool registration** -- registers the three tools described below.
 
 3. **Transport binding** -- creates a `StdioServerTransport` and connects.
-   <!-- [[vctx:src/mcp/server.ts#L70-L72@13a0f1b6]] -->
+   <!-- [[vctx:src/mcp/server.ts#L72-L74@13a0f1b6]] -->
 
 ## Registered tools
 
 ### `vctx_cite`
 
-<!-- [[vctx:src/mcp/server.ts#L21-L36@3aa3ce74]] -->
+<!-- [[vctx:src/mcp/server.ts#L23-L38@3aa3ce74]] -->
 
 Generates a verifiable citation for a file line-span.
 
@@ -63,7 +63,7 @@ Delegates to `generateCitation` from `src/cite/citation.ts`.
 
 ### `vctx_claim`
 
-<!-- [[vctx:src/mcp/server.ts#L38-L52@47558dbf]] -->
+<!-- [[vctx:src/mcp/server.ts#L40-L54@47558dbf]] -->
 
 Generates a structure-claim string for a filesystem path.
 
@@ -77,7 +77,7 @@ Delegates to `generateStructureClaim` from `src/cite/claim.ts`.
 
 ### `vctx_verify_workspace`
 
-<!-- [[vctx:src/mcp/server.ts#L54-L68@ebec77b3]] -->
+<!-- [[vctx:src/mcp/server.ts#L56-L70@ebec77b3]] -->
 
 Verifies all in-document VCC claims against the current workspace.
 

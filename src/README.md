@@ -12,9 +12,9 @@ src/
   types.ts          Shared type definitions
   core/             Deterministic file and path primitives
     file.ts         Canonical text reading, EOL normalization, SHA-256 hashing
-    pathing.ts      Root-jailed path resolution and exclusion rules
+    pathing.ts      Root-jailed path resolution
   cite/             Citation and structure claim generation/parsing
-    citation.ts     Line-span citation rendering, regex parsing, generation
+    citation.ts     Line-span citation rendering, regex parsing, generation, verification
     claim.ts        Structure claim rendering, regex parsing, generation, verification
   verify/           Workspace-level verification pipeline
     workspace.ts    Reads a document, extracts all VCC tokens, verifies each one
@@ -31,7 +31,7 @@ src/
 
 ### `cli.ts`
 
-<!-- [[vctx:src/cli.ts#L1-L111@d491e15a]] -->
+<!-- [[vctx:src/cli.ts#L1-L113@4df585c3]] -->
 
 The CLI entry point. Uses the `commander` library to register four top-level commands:
 
@@ -41,7 +41,7 @@ The CLI entry point. Uses the `commander` library to register four top-level com
 - **`mcp`** -- starts the MCP stdio server.
 
 Every command accepts `--root` (repository root) and `--json` (machine-readable output). The CLI is a thin adapter: it parses arguments, delegates to feature modules, and sets exit codes.
-<!-- [[vctx:src/cli.ts#L28-L105@ba562a4b]] -->
+<!-- [[vctx:src/cli.ts#L30-L107@43ecadbb]] -->
 
 ### `types.ts`
 
@@ -64,30 +64,27 @@ Shared type contracts used across the entire codebase:
 
 #### `core/file.ts`
 
-<!-- [[vctx:src/core/file.ts#L1-L83@45893a37]] -->
+<!-- [[vctx:src/core/file.ts#L1-L88@b703d4c1]] -->
 
 Provides deterministic file reading and hashing:
 
 - **`normalizeEol(text)`** -- replaces `\r\n` and `\r` with `\n` to ensure cross-platform consistency.
 - **`readCanonicalText(absolutePath)`** -- reads a file, rejects symlinks and binary files, decodes as strict UTF-8, normalizes line endings, and returns the canonical text plus an array of lines.
-  <!-- [[vctx:src/core/file.ts#L23-L55@0d766eb6]] -->
+  <!-- [[vctx:src/core/file.ts#L23-L59@0435973c]] -->
 - **`hashSha256Hex(value)`** -- returns the hex-encoded SHA-256 digest of a UTF-8 string.
 - **`hashLineSpan(lines, startLine, endLine)`** -- extracts a 1-based line range, joins with `\n`, and hashes the result. Returns the full 64-character hex digest.
-  <!-- [[vctx:src/core/file.ts#L57-L83@bae49b2e]] -->
+  <!-- [[vctx:src/core/file.ts#L62-L88@bae49b2e]] -->
 
 #### `core/pathing.ts`
 
-<!-- [[vctx:src/core/pathing.ts#L1-L54@74c23163]] -->
+<!-- [[vctx:src/core/pathing.ts#L1-L44@67843fbe]] -->
 
 Provides root-jailed path resolution:
 
-- **`DEFAULT_EXCLUDES`** -- paths that are always skipped: `.git`, `node_modules`, `dist`, `build`.
-  <!-- [[vctx:src/core/pathing.ts#L16-L24@265d2ab3]] -->
 - **`normalizePathForClaim(inputPath)`** -- converts backslashes to forward slashes, strips leading `./`.
+  <!-- [[vctx:src/core/pathing.ts#L16-L18@dd8adbaf]] -->
 - **`resolveUnderRoot(root, inputPath)`** -- resolves a relative path under the given root, rejects absolute paths and any path that escapes the root via `..`. Returns both the normalized (forward-slash) path and the absolute filesystem path.
-  <!-- [[vctx:src/core/pathing.ts#L26-L50@1d752a72]] -->
-- **`isExcludedPath(normalizedPath)`** -- checks whether a normalized path falls under any excluded prefix.
-  <!-- [[vctx:src/core/pathing.ts#L52-L54@27ee4218]] -->
+  <!-- [[vctx:src/core/pathing.ts#L20-L44@1d752a72]] -->
 
 ### `cite/` -- Citation and Claim Logic
 
@@ -95,7 +92,7 @@ Provides root-jailed path resolution:
 
 #### `cite/citation.ts`
 
-<!-- [[vctx:src/cite/citation.ts#L1-L64@2bd83842]] -->
+<!-- [[vctx:src/cite/citation.ts#L1-L91@2f499224]] -->
 
 Handles line-span citation tokens of the form `[[vctx:path#Lstart-Lend@hash8]]`:
 
@@ -126,17 +123,17 @@ Handles structure claim tokens of the form `[[vctx-kind:path]]`:
 
 #### `verify/workspace.ts`
 
-<!-- [[vctx:src/verify/workspace.ts#L1-L109@14af277c]] -->
+<!-- [[vctx:src/verify/workspace.ts#L1-L82@147e0596]] -->
 
 Orchestrates end-to-end verification of a document against the workspace:
 
 - **`readVerifyText(input)`** -- accepts either an `inPath` (file under root) or `text` (inline string), but not both. Reads and normalizes the document content.
-  <!-- [[vctx:src/verify/workspace.ts#L16-L44@3eac890a]] -->
+  <!-- [[vctx:src/verify/workspace.ts#L14-L35@af980e6f]] -->
 - **`verifyWorkspace(input)`** -- the main verification function. It parses all citation tokens and structure claims from the document, then verifies each one:
   - Citation tokens are verified by re-reading the referenced file, re-hashing the line span, and comparing the first 8 hex characters.
   - Structure claims are verified via `verifyStructureKind`.
   - Returns a `VerifyWorkspaceResult` with `ok` (true only if zero failures), `total`, `ok_count`, `fail_count`, and per-claim `results`.
-  <!-- [[vctx:src/verify/workspace.ts#L46-L109@39dad95f]] -->
+  <!-- [[vctx:src/verify/workspace.ts#L37-L82@bf6e3670]] -->
 
 ### `mcp/` -- MCP Server Adapter
 
@@ -144,7 +141,7 @@ Orchestrates end-to-end verification of a document against the workspace:
 
 #### `mcp/server.ts`
 
-<!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
+<!-- [[vctx:src/mcp/server.ts#L1-L74@649772e7]] -->
 
 Exposes the same three operations as the CLI through the Model Context Protocol over stdio:
 
@@ -153,7 +150,7 @@ Exposes the same three operations as the CLI through the Model Context Protocol 
 - **`vctx_verify_workspace`** -- calls `verifyWorkspace` with `root`, `in_path`, `text`.
 
 All tool responses are returned as JSON text payloads via the `textJson` helper.
-<!-- [[vctx:src/mcp/server.ts#L15-L72@f04e2724]] -->
+<!-- [[vctx:src/mcp/server.ts#L17-L74@9d9bf659]] -->
 
 ## Data Flow
 
@@ -161,13 +158,13 @@ All tool responses are returned as JSON text payloads via the `textJson` helper.
    <!-- [[vctx-exists-file:src/cli.ts]] -->
    <!-- [[vctx-exists-file:src/mcp/server.ts]] -->
 2. **Path resolution** -- every path-bearing operation calls `resolveUnderRoot()` to normalize and jail the path under root.
-   <!-- [[vctx:src/core/pathing.ts#L26-L50@1d752a72]] -->
+   <!-- [[vctx:src/core/pathing.ts#L20-L44@1d752a72]] -->
 3. **Cite** -- `generateCitation()` reads the file via `readCanonicalText()`, hashes the line span, and renders the token.
    <!-- [[vctx:src/cite/citation.ts#L37-L64@012d6e59]] -->
 4. **Claim** -- `generateStructureClaim()` builds a structure token; `verifyStructureKind()` checks it against the filesystem.
    <!-- [[vctx:src/cite/claim.ts#L31-L52@46a7abfb]] -->
 5. **Verify** -- `verifyWorkspace()` extracts all tokens from a document, verifies each one, and produces a summary result.
-   <!-- [[vctx:src/verify/workspace.ts#L46-L109@39dad95f]] -->
+   <!-- [[vctx:src/verify/workspace.ts#L37-L82@bf6e3670]] -->
 
 ## Design Principles
 

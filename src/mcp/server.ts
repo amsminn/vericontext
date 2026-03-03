@@ -6,6 +6,8 @@ import { generateCitation } from "../cite/citation.js";
 import { generateStructureClaim } from "../cite/claim.js";
 import { verifyWorkspace } from "../verify/workspace.js";
 
+declare const __VERSION__: string;
+
 function textJson(value: unknown): { content: Array<{ type: "text"; text: string }> } {
   return {
     content: [{ type: "text", text: JSON.stringify(value) }],
@@ -15,7 +17,7 @@ function textJson(value: unknown): { content: Array<{ type: "text"; text: string
 export async function runMcpServer(): Promise<void> {
   const server = new McpServer({
     name: "vericontext",
-    version: "0.1.0",
+    version: __VERSION__,
   });
 
   server.registerTool(

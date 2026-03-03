@@ -7,6 +7,8 @@ import { generateStructureClaim } from "./cite/claim.js";
 import { runMcpServer } from "./mcp/server.js";
 import { verifyWorkspace } from "./verify/workspace.js";
 
+declare const __VERSION__: string;
+
 function printResult(jsonMode: boolean, result: unknown, fallbackText?: string): void {
   if (jsonMode) {
     process.stdout.write(`${JSON.stringify(result)}\n`);
@@ -31,7 +33,7 @@ async function main(): Promise<void> {
   program
     .name("vericontext")
     .description("Verifiable Context Compactor")
-    .version("0.1.0");
+    .version(__VERSION__);
 
   withRootAndJson(
     program

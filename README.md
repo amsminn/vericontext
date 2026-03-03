@@ -218,8 +218,8 @@ npx vericontext verify workspace --root . --in-path README.md --json
 To see how claims look in raw source, view this file with `cat README.md` or click "Raw" on GitHub.
 
 <!-- [[vctx-exists-dir:src/]] -->
-<!-- [[vctx:src/cli.ts#L1-L111@d491e15a]] -->
-<!-- [[vctx:src/mcp/server.ts#L1-L72@c68412d1]] -->
+<!-- [[vctx:src/cli.ts#L1-L113@4df585c3]] -->
+<!-- [[vctx:src/mcp/server.ts#L1-L74@649772e7]] -->
 <!-- [[vctx-missing:tmp-output]] -->
 
 ## Contributing

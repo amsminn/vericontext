@@ -36,7 +36,12 @@ export async function readCanonicalText(absolutePath: string): Promise<FileTextO
     return { ok: false, reason: "not_a_file" };
   }
 
-  const bytes = await fs.readFile(absolutePath);
+  let bytes: Buffer;
+  try {
+    bytes = await fs.readFile(absolutePath);
+  } catch {
+    return { ok: false, reason: "file_missing" };
+  }
   const probe = bytes.subarray(0, 8192);
   if (probe.includes(0)) {
     return { ok: false, reason: "binary_file" };
